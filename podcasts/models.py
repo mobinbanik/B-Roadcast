@@ -2,7 +2,8 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.conf import settings
+from django.utils.html import mark_safe
+
 from abc import abstractmethod
 
 
@@ -89,6 +90,12 @@ class Channel(BaseModel):
         'User', on_delete=models.PROTECT, related_name='channels',
     )
 
+    def img_preview(self):
+        try:
+            return mark_safe(f'<img src = "{self.thumbnail.url}" style="max-width:200px; max-height:200px"/>')
+        except Exception as e:
+            return e.__str__()
+
     def __str__(self):
         return self.title
 
@@ -123,6 +130,12 @@ class Episode(BaseModel):
     thumbnail = models.ImageField(
         upload_to=get_episode_path
     )
+
+    def img_preview(self):
+        try:
+            return mark_safe(f'<img src = "{self.thumbnail.url}" style="max-width:200px; max-height:200px"/>')
+        except Exception as e:
+            return e.__str__()
 
     def __str__(self):
         return self.title

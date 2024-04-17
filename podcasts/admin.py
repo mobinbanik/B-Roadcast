@@ -59,8 +59,8 @@ class PlayListAdmin(admin.ModelAdmin):
 @register(Channel)
 class ChannelAdmin(admin.ModelAdmin):
     list_display = (
+        'img_preview',
         'channel_id',
-        'thumbnail',
         'title',
         'creator',
         'is_active',
@@ -87,6 +87,7 @@ class LikeAdmin(admin.ModelAdmin):
 @register(Episode)
 class EpisodeAdmin(admin.ModelAdmin):
     list_display = (
+        'img_preview',
         'episode_id',
         'title',
         'description',
