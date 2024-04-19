@@ -45,11 +45,7 @@ class BaseModel(models.Model):
 
 
 class User(UserModel):
-    user_id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
-    )
+    user_id = models.BigAutoField(primary_key=True)
     about = models.TextField()
     birth_date = models.DateField()
     gender = models.CharField(max_length=32)
@@ -100,29 +96,32 @@ class Channel(BaseModel):
         return self.title
 
 
-class Like(models.Model):
-    like_count = models.IntegerField(default=0)
-    dislike_count = models.IntegerField(default=0)
-    # Save user id
-    detail = models.TextField()
-
-    def __str__(self):
-        return f'{self.like_count}'
+# class Like(models.Model):
+#     like_count = models.IntegerField(default=0)
+#     dislike_count = models.IntegerField(default=0)
+#     # Save user id
+#     detail = models.TextField()
+#
+#     def __str__(self):
+#         return f'{self.like_count}'
 
 
 class Episode(BaseModel):
     title = models.CharField(max_length=255)
     episode_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     channel = models.ForeignKey(
         'Channel', on_delete=models.PROTECT, related_name='episodes',
     )
     session = models.IntegerField(default=1)
     view_count = models.IntegerField(default=0)
-    like = models.ForeignKey(
-        'Like', on_delete=models.PROTECT,
-    )
-    duration = models.DurationField()
+
+    like_count = models.IntegerField(default=0)
+    dislike_count = models.IntegerField(default=0)
+    # Save user id
+    action_detail = models.TextField(null=True, blank=True)
+
+    duration = models.DurationField(null=True, blank=True)
 
     audio_file = models.FileField(
         upload_to=get_episode_path
@@ -151,9 +150,12 @@ class Comment(BaseModel):
     episode = models.ForeignKey(
         'Episode', on_delete=models.CASCADE, related_name='episode_comments',
     )
-    like = models.ForeignKey(
-        'Like', on_delete=models.PROTECT,
-    )
+
+    like_count = models.IntegerField(default=0)
+    dislike_count = models.IntegerField(default=0)
+    # Save user id
+    action_detail = models.TextField(null=True, blank=True)
+
     is_reply = models.BooleanField(default=False)
     reply_to = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='episodes')
 

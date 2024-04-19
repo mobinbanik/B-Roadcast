@@ -2,11 +2,10 @@ from django.contrib import admin
 from django.contrib.admin import register
 
 from .models import (
-    BaseModel,
     User,
     PlayList,
     Channel,
-    Like,
+    # Like,
     Episode,
     Comment,
     ItemInPlayList,
@@ -20,7 +19,6 @@ from .models import (
 @register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = (
-        'user_id',
         'first_name',
         'last_name',
         'username',
@@ -75,13 +73,13 @@ class ChannelAdmin(admin.ModelAdmin):
     )
 
 
-@register(Like)
-class LikeAdmin(admin.ModelAdmin):
-    list_display = (
-        'like_count',
-        'dislike_count',
-        'detail',
-    )
+# @register(Like)
+# class LikeAdmin(admin.ModelAdmin):
+#     list_display = (
+#         'like_count',
+#         'dislike_count',
+#         'detail',
+#     )
 
 
 @register(Episode)
@@ -95,7 +93,7 @@ class EpisodeAdmin(admin.ModelAdmin):
         'channel',
         'session',
         'view_count',
-        'like',
+        # 'like',
         'is_active',
     )
     list_filter = (
