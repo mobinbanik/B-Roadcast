@@ -3,11 +3,13 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 
 from .forms import LoginForm, RegisterForm
+from .models import Episode
 
 
 # Create your views here.
-def view_podcasts(request):
-    return HttpResponse(f"hi")
+def home_view(request):
+    episodes = Episode.objects.all()
+    return render(request, 'podcast/home.html', {'episodes': episodes})
 
 
 def login_view(request):

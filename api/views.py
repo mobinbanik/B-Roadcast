@@ -10,6 +10,9 @@ from .serializer import (
     PlayListSerializer,
     CommentSerializer,
     UserChannelSerializer,
+    UserSerializer,
+    UserDislikeSerializer,
+    UserLikeSerializer,
     )
 from podcasts.models import (
     Episode,
@@ -246,6 +249,43 @@ class EpisodeViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(comments, many=True)
         return Response(serializer.data)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        'user_id',
+        'location',
+        'username',
+        'email',
+
+    ]
+
+
+class UserLikeViewSet(viewsets.ModelViewSet):
+    queryset = UserLike.objects.all()
+    serializer_class = UserLikeSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        'user',
+        'episode',
+        'comment',
+
+    ]
+
+
+class UserDislikeViewSet(viewsets.ModelViewSet):
+    queryset = UserDislike.objects.all()
+    serializer_class = UserDislikeSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        'user',
+        'episode',
+        'comment',
+
+    ]
 
 
 class ChannelViewSet(viewsets.ModelViewSet):

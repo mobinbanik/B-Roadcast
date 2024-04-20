@@ -1,20 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>My Posts</h1>
-	{% for post in posts %}
+<h1>Episodes</h1>
+	{% for episode in episodes %}
 		<h2>
-            <a href="{% url 'post' post.post.id%}" style="color: darkorange">{{ post.post.title }}</a>
+            {{ episode.title }}
         </h2>
-		<small>Published on {{ post.post.published_at | date:"M d, Y" }} by {{ post.post.author | title}}</small>
-		<p>{{ post.post.content }}</p>
-        <small> ({{ post.comment.count }} comments)</small>
-		{% if request.user.is_authenticated and request.user == post.post.author %}
-		<p>
-			<a href="{% url 'post-edit' post.post.id %}">Edit</a>
-			<a href="{% url 'post-delete' post.post.id%}">Delete</a>
-		</p>
-		{% endif %}
-
 	{% endfor %}
 {% endblock content %}

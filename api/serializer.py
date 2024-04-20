@@ -6,7 +6,25 @@ from podcasts.models import (
     ItemInPlayList,
     Comment,
     UserChannel,
+    User,
 )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'user_id',
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+            'about',
+            'birth_date',
+            'gender',
+            'location',
+
+        ]
 
 
 class EpisodeSerializer(serializers.ModelSerializer):
@@ -84,3 +102,26 @@ class UserChannelSerializer(serializers.ModelSerializer):
 
         ]
 
+
+class UserDislikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserChannel
+        fields = [
+            'user',
+            'episode',
+            'comment',
+
+        ]
+
+
+class UserLikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserChannel
+        fields = [
+            'user',
+            'episode',
+            'comment',
+
+        ]

@@ -10,9 +10,6 @@
   <body>
   	<header>
   		{%if request.user.is_authenticated %}
-  			<a href="{% url 'posts' %}">My Posts</a>
-  			<a href="{% url 'post-create' %}">New Post</a>
-            <br>
   			<span> {{ request.user.username | title }}</span>
   			<a href="{% url 'logout' %}">Logout</a>
   		{%else%}

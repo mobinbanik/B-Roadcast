@@ -6,6 +6,8 @@ from .views import (
     PlayListViewSet,
     CommentViewSet,
     UserChannelViewSet,
+    UserViewSet,
+
 )
 
 router_episode = DefaultRouter()
@@ -13,11 +15,13 @@ router_channels = DefaultRouter()
 router_play_list = DefaultRouter()
 router_comment = DefaultRouter()
 router_followers = DefaultRouter()
+router_users = DefaultRouter()
 router_episode.register(r'', EpisodeViewSet)
 router_channels.register(r'', ChannelViewSet)
 router_play_list.register(r'', PlayListViewSet)
 router_comment.register(r'', CommentViewSet)
 router_followers.register(r'', UserChannelViewSet)
+router_users.register(r'', UserViewSet)
 
 urlpatterns = [
     path('episode/', include(router_episode.urls)),
@@ -25,5 +29,6 @@ urlpatterns = [
     path('playlist/', include(router_play_list.urls)),
     path('comment/', include(router_comment.urls)),
     path('followers/', include(router_followers.urls)),
+    path('users/', include(router_users.urls)),
 
 ]
