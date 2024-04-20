@@ -3,7 +3,9 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 
 from .forms import LoginForm, RegisterForm
-from .models import Episode
+from .models import Episode, Log
+
+from django.conf import settings
 
 
 # Create your views here.
@@ -30,6 +32,10 @@ def login_view(request):
             if user:
                 login(request, user)
                 messages.success(request, f'Hi {username.title()}, welcome back!')
+                Log.objects.create(
+                    title=settings.LOG_LOGIN,
+                    log=f'{username.title()} logged in.'
+                )
                 return redirect('home')
 
         # either form not valid or user is not authenticated
@@ -48,6 +54,10 @@ def register_view(request):
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
+            Log.objects.create(
+                title=settings.LOG_REGISTER,
+                log=f'{user.username} registered.',
+            )
             messages.success(request, 'You have singed up successfully.')
             login(request, user)
             return redirect('home')
@@ -58,4 +68,8 @@ def register_view(request):
 def logout_view(request):
     logout(request)
     messages.success(request, f'You have been logged out.')
+    Log.objects.create(
+        title=settings.LOG_LOGOUT,
+        log=f'{request.user.username} logged out.'
+    )
     return redirect('login')

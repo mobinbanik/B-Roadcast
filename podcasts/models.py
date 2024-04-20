@@ -247,3 +247,11 @@ class UserDislike(models.Model):
         'Comment', on_delete=models.CASCADE, related_name='user_c_dislikes',
         null=True, blank=True,
     )
+
+
+class Log(BaseModel):
+    title = models.CharField(max_length=255, blank=False, null=False)
+    log = models.TextField(blank=False, null=False, editable=False)
+
+    def __str__(self):
+        return f'{self.title}'

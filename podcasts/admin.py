@@ -5,13 +5,15 @@ from .models import (
     User,
     PlayList,
     Channel,
-    # Like,
     Episode,
     Comment,
     ItemInPlayList,
     UserChannel,
     View,
     Listen,
+    Log,
+    UserDislike,
+    UserLike,
 )
 
 
@@ -71,15 +73,6 @@ class ChannelAdmin(admin.ModelAdmin):
         'description',
         'creator__username',
     )
-
-
-# @register(Like)
-# class LikeAdmin(admin.ModelAdmin):
-#     list_display = (
-#         'like_count',
-#         'dislike_count',
-#         'detail',
-#     )
 
 
 @register(Episode)
@@ -191,4 +184,54 @@ class ListenAdmin(admin.ModelAdmin):
     search_fields = (
         'user__username',
         'episode__title',
+    )
+
+
+@register(Log)
+class LogAdmin(admin.ModelAdmin):
+    list_display = (
+        'title',
+        'log',
+    )
+    search_fields = (
+        'title',
+        'log',
+    )
+
+
+@register(UserDislike)
+class UserDislikeAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'episode',
+        'comment',
+    )
+    list_filter = (
+        'user',
+        'episode',
+        'comment',
+    )
+    search_fields = (
+        'user',
+        'episode',
+        'comment',
+    )
+
+
+@register(UserLike)
+class UserLikeAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'episode',
+        'comment',
+    )
+    list_filter = (
+        'user',
+        'episode',
+        'comment',
+    )
+    search_fields = (
+        'user',
+        'episode',
+        'comment',
     )

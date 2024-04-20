@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -24,6 +25,7 @@ from podcasts.models import (
     UserDislike,
     Comment,
     UserChannel,
+    Log,
 )
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -60,6 +62,10 @@ class CommentViewSet(viewsets.ModelViewSet):
         if created:
             comment.like_count += 1
             comment.save()
+            Log.objects.create(
+                title=settings.LOG_LIKE_COMMENT,
+                log=f'{username.title()} Liked {comment}.'
+            )
             return Response({'status': 'Done!', 'likes': comment.like_count})
         else:
             return Response({'status': 'you already liked this comment.',  'likes': comment.like_count})
@@ -73,6 +79,10 @@ class CommentViewSet(viewsets.ModelViewSet):
         if created:
             comment.dislike_count += 1
             comment.save()
+            Log.objects.create(
+                title=settings.LOG_DISLIKE_COMMENT,
+                log=f'{username.title()} Disliked {comment}.'
+            )
             return Response({'status': 'Done!', 'dislikes': comment.dislike_count})
         else:
             return Response({'status': 'you already disliked this comment.', 'dislikes': comment.dislike_count})
@@ -90,6 +100,10 @@ class CommentViewSet(viewsets.ModelViewSet):
             comment.like_count -= 1
             comment.save()
             user_like.delete()
+            Log.objects.create(
+                title=settings.LOG_REMOVE_LIKE_COMMENT_COMMENT,
+                log=f'{username.title()} removed Like {comment}.'
+            )
             return Response({'status': 'removed!', 'likes': comment.like_count})
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
@@ -105,6 +119,10 @@ class CommentViewSet(viewsets.ModelViewSet):
             comment.dislike_count -= 1
             comment.save()
             user_dislike.delete()
+            Log.objects.create(
+                title=settings.LOG_REMOVE_DISLIKE_COMMENT,
+                log=f'{username.title()} remove Dislike {comment}.'
+            )
             return Response({'status': 'removed!', 'disliked': comment.dislike_count})
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
@@ -126,6 +144,10 @@ class CommentViewSet(viewsets.ModelViewSet):
                     is_replay=True,
                     reply_to=comment,
                 )
+                Log.objects.create(
+                    title=settings.LOG_REPLY_COMMENT,
+                    log=f'{username.title()} replied to {comment}.'
+                )
                 return Response({'status': 'Done!'})
             else:
                 return Response(serializer.errors)
@@ -137,11 +159,15 @@ class CommentViewSet(viewsets.ModelViewSet):
         episode = get_object_or_404(Episode, pk=pk)
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
-            Comment.objects.create(
+            comment = Comment.objects.create(
                 user=user,
                 episode=episode,
                 text=serializer.validated_data['text'],
                 is_replay=False,
+            )
+            Log.objects.create(
+                title=settings.LOG_COMMENT,
+                log=f'{username.title()} commented {comment}.'
             )
             return Response({'status': 'Done!'})
         else:
@@ -175,6 +201,10 @@ class EpisodeViewSet(viewsets.ModelViewSet):
         if created:
             episode.like_count += 1
             episode.save()
+            Log.objects.create(
+                title=settings.LOG_LIKE_EPISODE,
+                log=f'{username.title()} Liked {episode}.'
+            )
             return Response({'status': 'Done!', 'likes': episode.like_count})
         else:
             return Response({'status': 'you already liked this episode.',  'likes': episode.like_count})
@@ -188,6 +218,10 @@ class EpisodeViewSet(viewsets.ModelViewSet):
         if created:
             episode.dislike_count += 1
             episode.save()
+            Log.objects.create(
+                title=settings.LOG_DISLIKE_EPISODE,
+                log=f'{username.title()} Disliked {episode}.'
+            )
             return Response({'status': 'Done!', 'dislikes': episode.dislike_count})
         else:
             return Response({'status': 'you already disliked this episode.', 'dislikes': episode.dislike_count})
@@ -205,6 +239,10 @@ class EpisodeViewSet(viewsets.ModelViewSet):
             episode.like_count -= 1
             episode.save()
             user_like.delete()
+            Log.objects.create(
+                title=settings.LOG_REMOVE_LIKE_EPISODE,
+                log=f'{username.title()} removed Liked {episode}.'
+            )
             return Response({'status': 'removed!', 'likes': episode.like_count})
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
@@ -220,6 +258,10 @@ class EpisodeViewSet(viewsets.ModelViewSet):
             episode.dislike_count -= 1
             episode.save()
             user_dislike.delete()
+            Log.objects.create(
+                title=settings.LOG_REMOVE_DISLIKE_EPISODE,
+                log=f'{username.title()} removed Disliked {episode}.'
+            )
             return Response({'status': 'removed!', 'disliked': episode.dislike_count})
 
     @action(detail=True, methods=['post', 'get', 'delete'], permission_classes=[IsAuthenticated])
@@ -326,17 +368,21 @@ class PlayListViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post', 'get', 'delete'], permission_classes=[IsAuthenticated])
     def set(self, request, pk=None):
+        username = request.user.username
+        user = get_object_or_404(User, username=username)
         if request.user.is_superuser:
             play_list = get_object_or_404(PlayList, pk=pk)
         else:
-            username = request.user.username
-            user = get_object_or_404(User, username=username)
             play_list = get_object_or_404(PlayList, pk=pk, user=user)
         serializer = PlayListSerializer(data=request.data)
         if serializer.is_valid():
             play_list.title = serializer.validated_data['title']
             play_list.index = serializer.validated_data['index']
             play_list.save()
+            Log.objects.create(
+                title=settings.LOG_SET_PLAYLIST,
+                log=f'{username.title()} changed {play_list}.'
+            )
             return Response({'status': 'Done!'})
         else:
             return Response(serializer.errors)
