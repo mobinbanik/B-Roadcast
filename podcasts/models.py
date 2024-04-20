@@ -52,14 +52,14 @@ class User(UserModel):
     location = models.CharField(max_length=127)
 
     def __str__(self):
-        return self.first_name + ' ' + self.last_name
+        return self.username
 
 
 class PlayList(models.Model):
     title = models.CharField(max_length=127)
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
-        'User',
+        User,
         on_delete=models.CASCADE,
         related_name='play_lists',
     )
@@ -77,13 +77,13 @@ class Channel(BaseModel):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     channel_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    description = models.TextField()
-    thumbnail = models.ImageField(upload_to=get_channel_path)
+    description = models.TextField(blank=True, null=True)
+    thumbnail = models.ImageField(upload_to=get_channel_path, blank=True, null=True)
     view_count = models.IntegerField(default=0)
     subscribe_count = models.IntegerField(default=0)
     session_count = models.IntegerField(default=1)
     creator = models.ForeignKey(
-        'User', on_delete=models.PROTECT, related_name='channels',
+        User, on_delete=models.PROTECT, related_name='channels',
     )
 
     def img_preview(self):
@@ -96,16 +96,6 @@ class Channel(BaseModel):
         return self.title
 
 
-# class Like(models.Model):
-#     like_count = models.IntegerField(default=0)
-#     dislike_count = models.IntegerField(default=0)
-#     # Save user id
-#     detail = models.TextField()
-#
-#     def __str__(self):
-#         return f'{self.like_count}'
-
-
 class Episode(BaseModel):
     title = models.CharField(max_length=255)
     episode_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -114,12 +104,10 @@ class Episode(BaseModel):
         'Channel', on_delete=models.PROTECT, related_name='episodes',
     )
     session = models.IntegerField(default=1)
-    view_count = models.IntegerField(default=0)
+    view_count = models.IntegerField(default=0, editable=False)
 
-    like_count = models.IntegerField(default=0)
-    dislike_count = models.IntegerField(default=0)
-    # Save user id
-    action_detail = models.TextField(null=True, blank=True)
+    like_count = models.IntegerField(default=0, editable=False)
+    dislike_count = models.IntegerField(default=0, editable=False)
 
     duration = models.DurationField(null=True, blank=True)
 
@@ -145,19 +133,39 @@ class Comment(BaseModel):
     comment_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     is_active = models.BooleanField(default=False)
     user = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='user_comments',
+        User,
+        on_delete=models.CASCADE,
+        related_name='user_comments',
+        editable=False,
     )
     episode = models.ForeignKey(
-        'Episode', on_delete=models.CASCADE, related_name='episode_comments',
+        'Episode',
+        on_delete=models.CASCADE,
+        related_name='episode_comments',
+        editable=False,
     )
 
-    like_count = models.IntegerField(default=0)
-    dislike_count = models.IntegerField(default=0)
-    # Save user id
-    action_detail = models.TextField(null=True, blank=True)
-
-    is_reply = models.BooleanField(default=False)
-    reply_to = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='episodes')
+    like_count = models.IntegerField(
+        default=0,
+        editable=False,
+    )
+    dislike_count = models.IntegerField(
+        default=0,
+        editable=False,
+    )
+    is_reply = models.BooleanField(
+        default=False,
+        editable=False,
+    )
+    reply_to = models.ForeignKey(
+        'Comment',
+        on_delete=models.CASCADE,
+        related_name='episodes',
+        default=None,
+        null=True,
+        blank=True,
+        editable=False,
+    )
 
     def __str__(self):
         return self.user.username + ' comment'
@@ -178,7 +186,7 @@ class ItemInPlayList(models.Model):
 
 class UserChannel(models.Model):
     user = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='subscribed_channels',
+        User, on_delete=models.CASCADE, related_name='subscribed_channels',
     )
     channel = models.ForeignKey(
         'Channel', on_delete=models.CASCADE, related_name='users',
@@ -190,7 +198,7 @@ class UserChannel(models.Model):
 
 class View(models.Model):
     user = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='views',
+        User, on_delete=models.CASCADE, related_name='views',
     )
     channel = models.ForeignKey(
         'Channel', on_delete=models.CASCADE, related_name='views'
@@ -202,7 +210,7 @@ class View(models.Model):
 
 class Listen(models.Model):
     user = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='listens',
+        User, on_delete=models.CASCADE, related_name='listens',
     )
     episode = models.ForeignKey(
         'Episode', on_delete=models.CASCADE, related_name='listeners',
@@ -211,3 +219,31 @@ class Listen(models.Model):
 
     def __str__(self):
         return f'{self.user.username} listened to {self.episode.episode_id}'
+
+
+class UserLike(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='likes',
+    )
+    episode = models.ForeignKey(
+        'Episode', on_delete=models.CASCADE, related_name='user_likes',
+        null=True, blank=True,
+    )
+    comment = models.ForeignKey(
+        'Comment', on_delete=models.CASCADE, related_name='user_c_likes',
+        null=True, blank=True,
+    )
+
+
+class UserDislike(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='dislikes',
+    )
+    episode = models.ForeignKey(
+        'Episode', on_delete=models.CASCADE, related_name='user_dislikes',
+        null=True, blank=True,
+    )
+    comment = models.ForeignKey(
+        'Comment', on_delete=models.CASCADE, related_name='user_c_dislikes',
+        null=True, blank=True,
+    )
